@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById('product-form');
+            const productTable = document.getElementById('product-table-body');
+
+            // Функция для обновления списка продуктов
+            function updateProductList() {
+                fetch('/api/products/')
+                    .then(response => response.json())
+                    .then(products => {
+                        productTable.innerHTML = '';
+                        products.forEach(product => {
+                            const row = `<tr>
+                                <td>${product.name}</td>
+                                <td>${product.description}</td>
+                                <td>${product.price}</td>
+                            </tr>`;
+                            productTable.insertAdjacentHTML('beforeend', row);
+                        });
+                    });
+            }
+
+            // Обработчик отправки формы
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                const productData = {
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    price: formData.get('price')
+                };
+
+                fetch('/api/products/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    form.reset(); // Очистка формы после отправки
+                    updateProductList(); // Обновление списка продуктов
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            // Загрузка списка продуктов при загрузке страницы
+            updateProductList();
+        });
+    </script>
+</head>
+<body>
+    <h1>Product List</h1>
+
+    <form id="product-form">
+        <label>
+            Name:
+            <input type="text" name="name" required>
+        </label>
+        <br>
+        <label>
+            Description:
+            <textarea name="description" required></textarea>
+        </label>
+        <br>
+        <label>
+            Price:
+            <input type="number" step="0.01" name="price" required>
+        </label>
+        <br>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <h2>Products</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody id="product-table-body">
+            <!-- Здесь будет динамически добавляться список продуктов -->
+        </tbody>
+    </table>
+</body>
+</html>
